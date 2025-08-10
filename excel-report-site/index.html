@@ -30,18 +30,13 @@
     </select>
   </label>
 
-  <label>Recipient email
-    <input id="email" type="email" placeholder="you@example.com"/>
-  </label>
-
-  <button id="submitBtn">Generate Report & Send Email</button>
+  <button id="submitBtn">Generate Report & Download</button>
 
   <div id="status" style="margin-top:14px;color:#333"></div>
 
 <script>
-// Replace with your actual POST webhook endpoints in n8n
-const GET_COLS_URL = "https://n8n-212x.onrender.com/webhook/get-columns"; 
-const GENERATE_URL = "https://n8n-212x.onrender.com/webhook/generate-report";
+const GET_COLS_URL = "https://your-n8n-instance/webhook/get-columns"; 
+const GENERATE_URL = "https://your-n8n-instance/webhook/generate-report";
 
 const fileInput = document.getElementById('fileInput');
 const getColsBtn = document.getElementById('getColsBtn');
@@ -58,11 +53,11 @@ getColsBtn.addEventListener('click', async () => {
   if (!lastFile) { alert('Choose an Excel file first'); return; }
 
   const fd = new FormData();
-  fd.append('file', lastFile); // 'file' must match webhook node's binary field name
+  fd.append('file', lastFile);
 
   status.innerText = 'Uploading file to get columns...';
   try {
-    const r = await fetch(GET_COLS_URL, { method: 'POST', body: fd }); // Always POST
+    const r = await fetch(GET_COLS_URL, { method: 'POST', body: fd });
     if (!r.ok) {
       status.innerText = `Get-columns request failed: ${r.status}`;
       return;
@@ -91,40 +86,40 @@ function renderColumns(){
 
 submitBtn.addEventListener('click', async () => {
   if (!lastFile) return alert('Upload file and get columns first.');
+  
   const selected = Array.from(colsArea.querySelectorAll('input[type=checkbox]:checked')).map(i=>i.value);
   if (selected.length === 0) return alert('Select at least one column.');
-  const email = document.getElementById('email').value.trim();
-  if (!email) return alert('Enter recipient email.');
+
   const chartType = document.getElementById('chartType').value;
 
   const fd = new FormData();
   fd.append('file', lastFile);
   fd.append('columns', JSON.stringify(selected));
   fd.append('chart_type', chartType);
-  fd.append('email', email);
 
-  status.innerText = 'Uploading and requesting report...';
+  status.innerText = 'Generating your report...';
   submitBtn.disabled = true;
+
   try {
-    const r = await fetch(GENERATE_URL, { method: 'POST', body: fd }); // Always POST
+    const r = await fetch(GENERATE_URL, { method: 'POST', body: fd });
     if (!r.ok) {
       const txt = await r.text();
       status.innerText = `Generate request failed: ${r.status} ${txt}`;
-    } else {
-      status.innerText = 'Report request accepted — you will get an email when ready.';
+      return;
     }
+    
+    const blob = await r.blob();
+    const link = document.createElement('a');
+    link.href = window.URL.createObjectURL(blob);
+    link.download = "report.docx";
+    link.click();
+
+    status.innerText = 'Report downloaded successfully!';
   } catch (err) {
     status.innerText = 'Network error: ' + err.message;
   } finally {
     submitBtn.disabled = false;
   }
- 
-const blob = await r.blob();
-const link = document.createElement('a');
-link.href = window.URL.createObjectURL(blob);
-link.download = "report.docx";
-link.click();
-
 });
 </script>
 </body>
