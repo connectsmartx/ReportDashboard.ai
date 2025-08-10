@@ -39,8 +39,9 @@
   <div id="status" style="margin-top:14px;color:#333"></div>
 
 <script>
-const GET_COLS_URL = "https://n8n-212x.onrender.com/webhook/get-columns";       // <-- replace
-const GENERATE_URL = "YOUR_GENERATE_REPORT_WEBHOOK_URL";  // <-- replace
+// Replace with your actual POST webhook endpoints in n8n
+const GET_COLS_URL = "https://n8n-212x.onrender.com/webhook/get-columns"; 
+const GENERATE_URL = "https://n8n-212x.onrender.com/webhook/generate-report";
 
 const fileInput = document.getElementById('fileInput');
 const getColsBtn = document.getElementById('getColsBtn');
@@ -57,11 +58,11 @@ getColsBtn.addEventListener('click', async () => {
   if (!lastFile) { alert('Choose an Excel file first'); return; }
 
   const fd = new FormData();
-  fd.append('file', lastFile);
+  fd.append('file', lastFile); // 'file' must match webhook node's binary field name
 
   status.innerText = 'Uploading file to get columns...';
   try {
-    const r = await fetch(GET_COLS_URL, { method: 'POST', body: fd });
+    const r = await fetch(GET_COLS_URL, { method: 'POST', body: fd }); // Always POST
     if (!r.ok) {
       status.innerText = `Get-columns request failed: ${r.status}`;
       return;
@@ -105,7 +106,7 @@ submitBtn.addEventListener('click', async () => {
   status.innerText = 'Uploading and requesting report...';
   submitBtn.disabled = true;
   try {
-    const r = await fetch(GENERATE_URL, { method: 'POST', body: fd });
+    const r = await fetch(GENERATE_URL, { method: 'POST', body: fd }); // Always POST
     if (!r.ok) {
       const txt = await r.text();
       status.innerText = `Generate request failed: ${r.status} ${txt}`;
