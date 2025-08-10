@@ -97,6 +97,8 @@ submitBtn.addEventListener('click', async () => {
   if (!email) return alert('Enter recipient email.');
   const chartType = document.getElementById('chartType').value;
 
+  console.log('Selected columns:', selected);  // <-- Debug here to see selected columns before sending
+
   const fd = new FormData();
   fd.append('file', lastFile);
   fd.append('columns', JSON.stringify(selected));
@@ -130,6 +132,7 @@ submitBtn.addEventListener('click', async () => {
   } finally {
     submitBtn.disabled = false;
   }
+});
 
 });
 </script>
