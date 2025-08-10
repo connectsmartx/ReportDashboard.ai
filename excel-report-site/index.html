@@ -64,13 +64,13 @@ getColsBtn.addEventListener('click', async () => {
   try {
     const r = await fetch(GET_COLS_URL, { method: 'POST', body: fd }); // Always POST
     if (!r.ok) {
-      status.innerText = Get-columns request failed: ${r.status};
+      status.innerText = `Get-columns request failed: ${r.status}`;
       return;
     }
     const json = await r.json();
     availableColumns = json.columns || [];
     renderColumns();
-    status.innerText = Found ${availableColumns.length} columns. Select columns and submit.;
+    status.innerText = `Found ${availableColumns.length} columns. Select columns and submit.`;
   } catch (err) {
     status.innerText = 'Network error: ' + err.message;
   }
@@ -83,7 +83,7 @@ function renderColumns(){
   }
   let html = '<strong>Select columns:</strong><div id="cols">';
   availableColumns.forEach(c => {
-    html += <label><input type="checkbox" value="${c}"> ${c}</label>;
+    html += `<label><input type="checkbox" value="${c}"> ${c}</label>`;
   });
   html += '</div>';
   colsArea.innerHTML = html;
@@ -109,7 +109,7 @@ submitBtn.addEventListener('click', async () => {
     const r = await fetch(GENERATE_URL, { method: 'POST', body: fd }); // Always POST
     if (!r.ok) {
       const txt = await r.text();
-      status.innerText = Generate request failed: ${r.status} ${txt};
+      status.innerText = `Generate request failed: ${r.status} ${txt}`;
     } else {
       status.innerText = 'Report request accepted — you will get an email when ready.';
     }
@@ -118,13 +118,6 @@ submitBtn.addEventListener('click', async () => {
   } finally {
     submitBtn.disabled = false;
   }
- 
-const blob = await r.blob();
-const link = document.createElement('a');
-link.href = window.URL.createObjectURL(blob);
-link.download = "report.docx";
-link.click();
-
 });
 </script>
 </body>
