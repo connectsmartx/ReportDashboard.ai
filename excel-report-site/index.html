@@ -106,18 +106,31 @@ submitBtn.addEventListener('click', async () => {
   status.innerText = 'Uploading and requesting report...';
   submitBtn.disabled = true;
   try {
-    const r = await fetch(GENERATE_URL, { method: 'POST', body: fd }); // Always POST
+    const r = await fetch(GENERATE_URL, { method: 'POST', body: fd });
     if (!r.ok) {
       const txt = await r.text();
       status.innerText = `Generate request failed: ${r.status} ${txt}`;
-    } else {
-      status.innerText = 'Report request accepted — you will get an email when ready.';
+      return;
     }
+
+    // Expect n8n to return DOCX as binary
+    const blob = await r.blob();
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'report.docx';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+
+    status.innerText = 'Email sent and report downloaded.';
   } catch (err) {
     status.innerText = 'Network error: ' + err.message;
   } finally {
     submitBtn.disabled = false;
   }
+
 });
 </script>
 </body>
