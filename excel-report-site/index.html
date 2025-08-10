@@ -118,6 +118,13 @@ submitBtn.addEventListener('click', async () => {
   } finally {
     submitBtn.disabled = false;
   }
+ 
+const blob = await r.blob();
+const link = document.createElement('a');
+link.href = window.URL.createObjectURL(blob);
+link.download = "report.docx";
+link.click();
+
 });
 </script>
 </body>
