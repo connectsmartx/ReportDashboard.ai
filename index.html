@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Excel Report Generator</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        h1 { color: #333; }
+        button { padding: 8px 14px; margin: 5px 0; cursor: pointer; }
+        input, select { padding: 5px; margin: 5px 0; }
+    </style>
+</head>
+<body>
+    <h1>Excel Report & Dashboard Generator</h1>
+
+    <label><b>Step 1:</b> Upload Excel to get columns</label><br>
+    <input type="file" id="fileInput" accept=".xlsx,.xls"><br><br>
+    <button onclick="getColumns()">Get Columns</button><br><br>
+
+    <div id="columnSelect"></div>
+
+    <label><b>Chart Type:</b></label>
+    <select id="chartType">
+        <option value="bar">Bar</option>
+        <option value="line">Line</option>
+        <option value="pie">Pie</option>
+    </select><br><br>
+
+    <label><b>Email:</b></label>
+    <input type="email" id="emailInput" placeholder="your@email.com"><br><br>
+
+    <button onclick="submitReport()">Generate Report</button>
+
+    <script>
+        let currentFile;
+        let columns = [];
+
+        const getColumnsWebhook = "YOUR_GET_COLUMNS_WEBHOOK_URL";
+        const generateReportWebhook = "YOUR_GENERATE_REPORT_WEBHOOK_URL";
+
+        async function getColumns() {
+            currentFile = document.getElementById("fileInput").files[0];
+            if (!currentFile) {
+                alert("Please upload an Excel file first.");
+                return;
+            }
+            const formData = new FormData();
+            formData.append("file", currentFile);
+
+            const res = await fetch(getColumnsWebhook, {
+                method: "POST",
+                body: formData
+            });
+            const data = await res.json();
+            columns = data.columns || [];
+
+            if (columns.length === 0) {
+                alert("No columns found in the file.");
+                return;
+            }
+
+            const colDiv = document.getElementById("columnSelect");
+            colDiv.innerHTML = "<h3>Select Columns:</h3>";
+            columns.forEach(col => {
+                colDiv.innerHTML += `<label><input type="checkbox" value="${col}"> ${col}</label><br>`;
+            });
+        }
+
+        async function submitReport() {
+            if (!currentFile) {
+                alert("Please upload a file first.");
+                return;
+            }
+            const selectedCols = [...document.querySelectorAll("#columnSelect input:checked")].map(e => e.value);
+            if (selectedCols.length === 0) {
+                alert("Please select at least one column.");
+                return;
+            }
+
+            const chartType = document.getElementById("chartType").value;
+            const email = document.getElementById("emailInput").value;
+            if (!email) {
+                alert("Please enter an email.");
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append("file", currentFile);
+            formData.append("columns", selectedCols.join(","));
+            formData.append("chart_type", chartType);
+            formData.append("email", email);
+
+            await fetch(generateReportWebhook, {
+                method: "POST",
+                body: formData
+            });
+
+            alert("Your report is being generated and will be emailed to you!");
+        }
+    </script>
+</body>
+</html>
